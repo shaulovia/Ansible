@@ -17,10 +17,6 @@
         timeout: 300
       loop: "{{ lookup('dict', vms) }}"
     
-    - name: Wait for system to become reachable over WinRM
-      ansible.builtin.wait_for_connection:
-       
-
     - name: Set IP addresses
       command: "qm set {{ item.value.vmid }}  --ipconfig0 ip={{ item.value.ipaddress }}"
       loop: "{{ lookup('dict', vms) }}"
@@ -48,6 +44,3 @@
         node:         "{{ node }}"
         state:        started
       loop: "{{ lookup('dict', vms) }}"
-      # Note, we should only really attempt to start the VM it was successful in it's cloning process. 
-      # You should register a variable `cloneVM` so you can determine if the task was successful.
-      when: cloneVM is successful    

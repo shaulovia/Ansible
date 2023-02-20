@@ -1,0 +1,20 @@
+api_host: pve.ent.macroscop.com
+api_user: root@pam
+api_password: Madmin1!
+node: pve
+clone_vm: UbuntuTest
+vms:
+  master:
+    name: utest
+    ipaddress: 192.168.100.203/24
+    vmid: 200
+    cores: 4
+    sockets: 2
+    memory: 2048
+  slave:
+    name: utestslave
+    ipaddress: 10.10.100.204/24
+    vmid: 201
+    cores: 4
+    sockets: 2
+    memory: 2048

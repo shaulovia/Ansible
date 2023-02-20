@@ -1,0 +1,53 @@
+---
+- name: Initial setup VM
+  hosts: pve_srv
+  vars_files:
+    - vms.yml
+  tasks:
+    - name: Clone VMs
+      proxmox_kvm:
+        node: "{{ node }}"
+        name: "{{ item.value.name }}"
+        newid: "{{ item.value.vmid }}"
+        api_user: "{{ api_user }}"
+        api_password: "{{ api_password }}"
+        api_host: "{{ api_host }}"
+        clone: "{{ clone_vm }}"
+        full: yes
+        timeout: 300
+      loop: "{{ lookup('dict', vms) }}"
+    
+    - name: Wait for system to become reachable over WinRM
+      ansible.builtin.wait_for_connection:
+       
+
+    - name: Set IP addresses
+      command: "qm set {{ item.value.vmid }}  --ipconfig0 ip={{ item.value.ipaddress }}"
+      loop: "{{ lookup('dict', vms) }}"
+
+    - name: Update VMs
+      proxmox_kvm:
+        api_host:     "{{ api_host }}"
+        api_user:     "{{ api_user }}"
+        api_password: "{{ api_password }}"
+        cores:        "{{ item.value.cores }}"
+        sockets:      "{{ item.value.sockets }}"
+        memory:       "{{ item.value.memory }}"
+        update:       yes
+        vmid:         "{{ item.value.vmid }}"
+        node:         "{{ node }}"
+        name:         "{{ item.value.name }}"
+      loop: "{{ lookup('dict', vms) }}"
+
+    - name: Start VMs
+      proxmox_kvm:
+        api_host:     "{{ api_host }}"
+        api_password: "{{ api_password }}"
+        api_user:     "{{ api_user }}"
+        vmid:         "{{ item.value.vmid }}"
+        node:         "{{ node }}"
+        state:        started
+      loop: "{{ lookup('dict', vms) }}"
+      # Note, we should only really attempt to start the VM it was successful in it's cloning process. 
+      # You should register a variable `cloneVM` so you can determine if the task was successful.
+      when: cloneVM is successful    
